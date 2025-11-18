@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Analysis - Smart Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .page-header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .page-header p {
+            font-size: 18px;
+            color: #cbd5e1;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 100px 40px;
+        }
+
+        .loading.hidden {
+            display: none;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            border: 6px solid rgba(99, 102, 241, 0.2);
+            border-top: 6px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            font-size: 18px;
+            color: #94a3b8;
+        }
+
+        /* Main Grid */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+        }
+
+        .metric-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .metric-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .metric-value {
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 16px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* Score Section */
+        .score-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 50px 40px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .score-ring-container {
+            display: flex;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .score-ring {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: conic-gradient(
+                #6366f1 0deg,
+                #8b5cf6 calc(var(--score) * 3.6deg),
+                rgba(99, 102, 241, 0.1) calc(var(--score) * 3.6deg)
+            );
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.4);
+            animation: ringAppear 1s ease-out;
+        }
+
+        @keyframes ringAppear {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .score-ring::before {
+            content: '';
+            width: 200px;
+            height: 200px;
+            background: #1e293b;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .score-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-number {
+            font-size: 72px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .score-label {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .score-rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 30px;
+        }
+
+        .score-rating.excellent {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2));
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .score-rating.good {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .score-rating.average {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .score-rating.poor {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Breakdown Section */
+        .breakdown-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-item {
+            margin-bottom: 32px;
+        }
+
+        .progress-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e0e7ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-score {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .progress-bar {
+            height: 14px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-fill.purple { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+        .progress-fill.blue { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+        .progress-fill.green { background: linear-gradient(90deg, #10b981, #14b8a6); }
+        .progress-fill.orange { background: linear-gradient(90deg, #f59e0b, #f97316); }
+
+        /* Feedback Section */
+        .feedback-section {
+            display: grid;
+            gap: 30px;
+        }
+
+        .feedback-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 35px;
+            backdrop-filter: blur(10px);
+            border-left: 4px solid;
+        }
+
+        .feedback-card.strengths {
+            border-left-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(30, 41, 59, 0.5));
+        }
+
+        .feedback-card.improvements {
+            border-left-color: #fbbf24;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(30, 41, 59, 0.5));
+        }
+
+        .feedback-card.issues {
+            border-left-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(30, 41, 59, 0.5));
+        }
+
+        .feedback-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-card.strengths .feedback-title { color: #10b981; }
+        .feedback-card.improvements .feedback-title { color: #fbbf24; }
+        .feedback-card.issues .feedback-title { color: #ef4444; }
+
+        .feedback-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .feedback-list li {
+            padding-left: 0;
+            position: relative;
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .feedback-list li::before {
+            content: '•';
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+
+        .feedback-card.strengths .feedback-list li::before { color: #10b981; }
+        .feedback-card.improvements .feedback-list li::before { color: #fbbf24; }
+        .feedback-card.issues .feedback-list li::before { color: #ef4444; }
+
+        /* Action Buttons */
+        .action-section {
+            text-align: center;
+            margin-top: 60px;
+            padding: 50px 40px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 20px;
+        }
+
+        .action-section h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .action-section p {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 36px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 100px 40px;
+        }
+
+        .empty-state.hidden {
+            display: none;
+        }
+
+        .empty-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            opacity: 0.3;
+        }
+
+        .empty-state h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 18px;
+            color: #94a3b8;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 36px;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-ring {
+                width: 200px;
+                height: 200px;
+            }
+
+            .score-ring::before {
+                width: 160px;
+                height: 160px;
+            }
+
+            .score-number {
+                font-size: 56px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Common Navigation Bar -->
+    <nav style="background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%); padding: 1rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" style="color: white; font-size: 1.5rem; font-weight: 700; text-decoration: none;">Smart Resume</a>
+            <ul style="display: flex; list-style: none; gap: 2rem; margin: 0; padding: 0;">
+                <li><a href="/" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Home</a></li>
+                <li><a href="/upload" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Upload</a></li>
+                <li><a href="/analysis" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600; background: rgba(255,255,255,0.3);">Dashboard</a></li>
+                <li><a href="/interview" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Interview</a></li>
+                <li><a href="/roadmap" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.transform=''">Roadmap</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-badge">AI-POWERED ANALYSIS</div>
+            <h1>ATS Analysis Report</h1>
+            <p>Detailed insights to optimize your resume for success</p>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingState">
+            <div class="spinner"></div>
+            <p>Analyzing your resume...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state hidden" id="emptyState">
+            <div class="empty-icon">📊</div>
+            <h2>No Analysis Available</h2>
+            <p>Upload your resume to get started with AI-powered insights</p>
+            <a href="upload-resume.html" class="btn btn-primary">
+                <span>Upload Resume</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <!-- Analysis Content -->
+        <div id="analysisContent" style="display: none;">
+            <!-- Metrics Grid -->
+            <div class="analysis-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">🤖</div>
+                    <div class="metric-value" id="atsScore">--</div>
+                    <div class="metric-label">ATS Score</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-value" id="overallScore">--</div>
+                    <div class="metric-label">Overall Score</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-value" id="keywordScore">--</div>
+                    <div class="metric-label">Keyword Match</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📝</div>
+                    <div class="metric-value" id="grammarScore">--</div>
+                    <div class="metric-label">Grammar Style</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🎨</div>
+                    <div class="metric-value" id="formatScore">--</div>
+                    <div class="metric-label">Format Quality</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💪</div>
+                    <div class="metric-value" id="contentScore">--</div>
+                    <div class="metric-label">Content Strength</div>
+                </div>
+            </div>
+
+            <!-- Score Ring -->
+            <div class="score-section">
+                <h2 class="section-title">Overall ATS Compatibility</h2>
+                <div class="score-ring-container">
+                    <div class="score-ring" id="scoreRing" style="--score: 0">
+                        <div class="score-content">
+                            <div class="score-number" id="mainScore">0</div>
+                            <div class="score-label">out of 100</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="score-rating" id="scoreRating">
+                    <span id="ratingIcon">⭐</span>
+                    <span id="ratingText">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown -->
+            <div class="breakdown-section">
+                <h2 class="section-title">📊 Detailed Breakdown</h2>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">🎯 Keyword Match</div>
+                        <div class="progress-score" id="keywordBadge">--</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill purple" id="keywordBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">🎨 Format Quality</div>
+                        <div class="progress-score" id="formatBadge">--</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill blue" id="formatBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">📝 Grammar & Style</div>
+                        <div class="progress-score" id="grammarBadge">--</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill green" id="grammarBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">💼 Content Strength</div>
+                        <div class="progress-score" id="contentBadge">--</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill orange" id="contentBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div class="feedback-section" id="feedbackContainer">
+                <!-- Feedback cards will be inserted here -->
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-section">
+                <h2>Ready for the Next Step?</h2>
+                <p>Continue your career journey with personalized guidance</p>
+                <div class="action-buttons">
+                    <a href="/interview" class="btn btn-primary">
+                        <span>💬</span>
+                        <span>Interview Questions</span>
+                    </a>
+                    <a href="/roadmap" class="btn btn-secondary">
+                        <span>🗺️</span>
+                        <span>Career Roadmap</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load real analysis data from API
+        async function loadAnalysisData() {
+            try {
+                const response = await fetch('/api/dashboard');
+                if (!response.ok) {
+                    throw new Error('Failed to load analysis data');
+                }
+                
+                const dashboardData = await response.json();
+                
+                if (!dashboardData.latestAnalysis) {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('emptyState').classList.remove('hidden');
+                    return;
+                }
+                
+                const analysis = dashboardData.latestAnalysis;
+                
+                // Transform data to match display format
+                const displayData = {
+                    ats_score: analysis.ats_score || 0,
+                    overall_score: analysis.overall_score || 0,
+                    keyword_match: analysis.keyword_match || 0,
+                    format_quality: analysis.format_quality || 0,
+                    grammar_style: analysis.grammar_style || 0,
+                    content_strength: analysis.content_strength || 0,
+                    feedback: analysis.feedback || {strengths: [], improvements: [], issues: []}
+                };
+
+                document.getElementById('loadingState').style.display = 'none';
+                displayAnalysis(displayData);
+                
+            } catch (error) {
+                console.error('Error loading analysis:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
+        }
+
+        function displayAnalysis(data) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('analysisContent').style.display = 'block';
+
+            // Animate scores with new metric names
+            animateValue('mainScore', 0, data.ats_score, 1500);
+            animateValue('atsScore', 0, data.ats_score, 1000);
+            animateValue('overallScore', 0, data.overall_score, 1000);
+            animateValue('keywordScore', 0, data.keyword_match, 1000);
+            animateValue('grammarScore', 0, data.grammar_style, 1000);
+            animateValue('formatScore', 0, data.format_quality, 1000);
+            animateValue('contentScore', 0, data.content_strength, 1000);
+
+            // Update score ring with ATS score
+            document.getElementById('scoreRing').style.setProperty('--score', data.ats_score);
+
+            // Set rating based on ATS score
+            setRating(data.ats_score);
+
+            // Animate progress bars
+            setTimeout(() => {
+                setProgress('keyword', data.keyword_match);
+                setProgress('format', data.format_quality);
+                setProgress('grammar', data.grammar_style);
+                setProgress('content', data.content_strength);
+            }, 300);
+
+            // Display feedback
+            displayFeedback(data.feedback);
+        }
+
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    element.textContent = Math.round(end);
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current);
+                }
+            }, 16);
+        }
+
+        function setProgress(name, score) {
+            document.getElementById(name + 'Badge').textContent = score + '%';
+            document.getElementById(name + 'Bar').style.width = score + '%';
+        }
+
+        function setRating(score) {
+            const ratingEl = document.getElementById('scoreRating');
+            const iconEl = document.getElementById('ratingIcon');
+            const textEl = document.getElementById('ratingText');
+
+            ratingEl.className = 'score-rating';
+
+            if (score >= 85) {
+                ratingEl.classList.add('excellent');
+                iconEl.textContent = '🎉';
+                textEl.textContent = 'Excellent';
+            } else if (score >= 70) {
+                ratingEl.classList.add('good');
+                iconEl.textContent = '👍';
+                textEl.textContent = 'Good';
+            } else if (score >= 50) {
+                ratingEl.classList.add('average');
+                iconEl.textContent = '⚠️';
+                textEl.textContent = 'Average';
+            } else {
+                ratingEl.classList.add('poor');
+                iconEl.textContent = '📉';
+                textEl.textContent = 'Needs Work';
+            }
+        }
+
+        function displayFeedback(feedback) {
+            const container = document.getElementById('feedbackContainer');
+            let html = '';
+
+            if (feedback.strengths && feedback.strengths.length > 0) {
+                html += `
+                    <div class="feedback-card strengths">
+                        <div class="feedback-title">✓ Strong Points</div>
+                        <ul class="feedback-list">
+                            ${feedback.strengths.map(item => `<li><span>${item}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (feedback.improvements && feedback.improvements.length > 0) {
+                html += `
+                    <div class="feedback-card improvements">
+                        <div class="feedback-title">⚠ Areas to Improve</div>
+                        <ul class="feedback-list">
+                            ${feedback.improvements.map(item => `<li><span>${item}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (feedback.issues && feedback.issues.length > 0) {
+                html += `
+                    <div class="feedback-card issues">
+                        <div class="feedback-title">✕ Critical Issues</div>
+                        <ul class="feedback-list">
+                            ${feedback.issues.map(item => `<li><span>${item}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Load analysis on page load
+        loadAnalysisData();
+    </script>
+</body>
+</html>

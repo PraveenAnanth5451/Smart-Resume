@@ -1,0 +1,48 @@
+John Smith
+Software Engineer
+Email: john.smith@email.com
+Phone: (555) 123-4567
+
+PROFESSIONAL SUMMARY
+Experienced Full-Stack Software Engineer with 5 years of experience developing web applications using React, Node.js, and Python. Proven track record of building scalable systems and leading cross-functional teams.
+
+TECHNICAL SKILLS
+• Programming Languages: JavaScript, TypeScript, Python, Java
+• Frontend: React, Vue.js, HTML5, CSS3, Tailwind CSS
+• Backend: Node.js, Express, Django, FastAPI
+• Databases: PostgreSQL, MongoDB, Redis
+• Cloud: AWS, Docker, Kubernetes
+• Tools: Git, Jenkins, Jira, Figma
+
+WORK EXPERIENCE
+
+Senior Software Engineer | TechCorp Inc. | 2021 - Present
+• Led development of customer portal serving 100K+ users, improving user satisfaction by 25%
+• Architected microservices infrastructure reducing system latency by 40%
+• Mentored 3 junior developers and conducted code reviews
+• Collaborated with product managers and designers on feature specifications
+
+Software Developer | StartupXYZ | 2019 - 2021
+• Developed RESTful APIs and responsive web interfaces using React and Node.js
+• Implemented automated testing suite increasing code coverage from 60% to 95%
+• Participated in agile development process and sprint planning
+• Optimized database queries reducing response time by 30%
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology | 2015 - 2019
+GPA: 3.7/4.0
+
+PROJECTS
+E-commerce Platform (2023)
+• Built full-stack e-commerce application with payment integration
+• Technologies: React, Node.js, PostgreSQL, Stripe API
+• Deployed on AWS with CI/CD pipeline
+
+Task Management App (2022)
+• Developed collaborative task management tool with real-time updates
+• Technologies: Vue.js, Express, Socket.io, MongoDB
+
+CERTIFICATIONS
+• AWS Certified Solutions Architect (2022)
+• Google Cloud Professional Developer (2021)

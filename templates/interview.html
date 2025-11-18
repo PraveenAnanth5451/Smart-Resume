@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Preparation - Smart Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .nav-header {
+            background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Main Container */
+        .main-container {
+            padding: 60px 40px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            font-size: 20px;
+            color: #cbd5e1;
+        }
+
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.purple { 
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        .stat-icon.cyan { 
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        .stat-icon.pink { 
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+        }
+
+        .stat-content h3 {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .stat-content p {
+            font-size: 15px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 28px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: 700;
+            color: white;
+            font-size: 16px;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .filter-tag {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            background: rgba(15, 23, 42, 0.5);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tag:hover {
+            border-color: rgba(99, 102, 241, 0.6);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .filter-tag.active {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Question Cards */
+        .questions-grid {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .question-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 35px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 24px;
+            gap: 16px;
+        }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .question-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .question-tag {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .question-tag.behavioral {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .question-tag.technical {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .question-tag.situational {
+            background: rgba(236, 72, 153, 0.15);
+            color: #f9a8d4;
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .question-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .answer-section {
+            background: rgba(99, 102, 241, 0.08);
+            padding: 24px;
+            border-radius: 14px;
+            border-left: 4px solid #6366f1;
+            margin-bottom: 20px;
+        }
+
+        .answer-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: #a5b4fc;
+            margin-bottom: 14px;
+            font-size: 15px;
+        }
+
+        .answer-text {
+            color: #cbd5e1;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .tips-section {
+            background: rgba(16, 185, 129, 0.08);
+            padding: 24px;
+            border-radius: 14px;
+            border-left: 4px solid #10b981;
+        }
+
+        .tips-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: #6ee7b7;
+            margin-bottom: 14px;
+            font-size: 15px;
+        }
+
+        .tips-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tips-list li {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.7;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .tips-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px 28px;
+            border-radius: 12px;
+            border: 2px solid;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .action-btn.bookmark {
+            border-color: rgba(236, 72, 153, 0.3);
+            color: #f9a8d4;
+            background: rgba(236, 72, 153, 0.1);
+        }
+
+        .action-btn.bookmark:hover {
+            border-color: rgba(236, 72, 153, 0.5);
+            color: #fbbf24;
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        .action-btn.bookmark.active {
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 100px 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 24px;
+            border: 4px solid rgba(99, 102, 241, 0.2);
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 40px 20px;
+            }
+
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .header p {
+                font-size: 16px;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .question-card {
+                padding: 28px;
+            }
+
+            .question-text {
+                font-size: 19px;
+            }
+
+            .question-actions {
+                flex-direction: column;
+            }
+
+            .nav-menu {
+                gap: 1rem;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Common Navigation Bar -->
+    <nav style="background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%); padding: 1rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" style="color: white; font-size: 1.5rem; font-weight: 700; text-decoration: none;">Smart Resume</a>
+            <ul style="display: flex; list-style: none; gap: 2rem; margin: 0; padding: 0;">
+                <li><a href="/" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Home</a></li>
+                <li><a href="/upload" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Upload</a></li>
+                <li><a href="/analysis" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Dashboard</a></li>
+                <li><a href="/interview" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600; background: rgba(255,255,255,0.3);">Interview</a></li>
+                <li><a href="/roadmap" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Roadmap</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="container">
+            <div class="header">
+                <h1>Interview Preparation</h1>
+                <p>Practice with AI-generated questions tailored to your resume</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon purple">📝</div>
+                    <div class="stat-content">
+                        <h3 id="totalQuestions">12</h3>
+                        <p>Total Questions</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon cyan">✅</div>
+                    <div class="stat-content">
+                        <h3 id="practiced">5</h3>
+                        <p>Practiced</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon pink">⭐</div>
+                    <div class="stat-content">
+                        <h3 id="bookmarked">3</h3>
+                        <p>Bookmarked</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <span class="filter-label">Filter by:</span>
+                <div class="filter-tags">
+                    <button class="filter-tag active" data-filter="all">All Questions</button>
+                    <button class="filter-tag" data-filter="behavioral">Behavioral</button>
+                    <button class="filter-tag" data-filter="technical">Technical</button>
+                    <button class="filter-tag" data-filter="situational">Situational</button>
+                </div>
+            </div>
+
+            <div class="loading active" id="loadingState">
+                <div class="spinner"></div>
+                <p style="color: #94a3b8;">Loading your questions...</p>
+            </div>
+
+            <div class="questions-grid" id="questionsContainer" style="display: none;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+
+        const mockQuestions = [
+            {
+                id: 1,
+                type: 'behavioral',
+                question: 'Tell me about a time when you had to work under pressure to meet a tight deadline.',
+                sampleAnswer: 'In my previous role, we had a critical project with a two-week deadline that suddenly moved up to one week. I immediately prioritized tasks, communicated with stakeholders, and organized daily check-ins with the team. By focusing on core features and delegating effectively, we delivered the project on time with high quality.',
+                tips: [
+                    'Use the STAR method (Situation, Task, Action, Result)',
+                    'Focus on your specific contributions',
+                    'Quantify your results when possible',
+                    'Keep your answer concise (2-3 minutes)'
+                ]
+            },
+            {
+                id: 2,
+                type: 'technical',
+                question: 'Explain the difference between authentication and authorization.',
+                sampleAnswer: 'Authentication is the process of verifying who a user is, typically through credentials like username and password. Authorization determines what an authenticated user is allowed to do - what resources they can access and what actions they can perform. For example, logging into a system is authentication, while accessing admin features is authorization.',
+                tips: [
+                    'Start with clear definitions',
+                    'Provide real-world examples',
+                    'Mention relevant technologies you have used',
+                    'Show understanding of security best practices'
+                ]
+            },
+            {
+                id: 3,
+                type: 'situational',
+                question: 'How would you handle a situation where a team member is not contributing equally?',
+                sampleAnswer: 'I would first have a private, one-on-one conversation to understand if there are any underlying issues affecting their performance. I would offer support and clearly communicate expectations. If the situation does not improve, I would document the concerns and involve a manager or HR to find a constructive solution while maintaining team morale.',
+                tips: [
+                    'Show empathy and understanding',
+                    'Demonstrate leadership and communication skills',
+                    'Focus on collaborative problem-solving',
+                    'Mention following proper channels'
+                ]
+            },
+            {
+                id: 4,
+                type: 'behavioral',
+                question: 'Describe a situation where you had to learn a new technology quickly.',
+                sampleAnswer: 'When my company decided to migrate to a new cloud platform, I took the initiative to complete online certifications, build sample projects, and participate in community forums. Within two weeks, I became proficient enough to lead the migration for my team and created documentation to help others learn.',
+                tips: [
+                    'Highlight your learning methodology',
+                    'Show enthusiasm for continuous learning',
+                    'Mention resources you used',
+                    'Emphasize the positive outcome'
+                ]
+            },
+            {
+                id: 5,
+                type: 'technical',
+                question: 'What is your approach to debugging complex issues in production?',
+                sampleAnswer: 'I follow a systematic approach: first, I gather information about the issue including logs, error messages, and reproduction steps. Then I isolate the problem by checking recent changes, reviewing monitoring tools, and testing hypotheses. I document my findings and implement a fix with proper testing. Finally, I conduct a post-mortem to prevent similar issues.',
+                tips: [
+                    'Show your methodical thinking process',
+                    'Mention specific tools and techniques',
+                    'Emphasize communication during incidents',
+                    'Discuss learning from failures'
+                ]
+            },
+            {
+                id: 6,
+                type: 'behavioral',
+                question: 'Tell me about a time you received constructive criticism. How did you handle it?',
+                sampleAnswer: 'During a code review, a senior developer pointed out that my code was not following best practices for error handling. Instead of being defensive, I asked questions to understand better, reviewed recommended resources, and refactored my code. I now see code reviews as valuable learning opportunities and regularly seek feedback.',
+                tips: [
+                    'Show openness to feedback',
+                    'Demonstrate growth mindset',
+                    'Explain what you learned',
+                    'Show how it improved your work'
+                ]
+            },
+            {
+                id: 7,
+                type: 'situational',
+                question: 'What would you do if you disagreed with your manager\'s technical decision?',
+                sampleAnswer: 'I would first ensure I fully understand their reasoning by asking clarifying questions. Then I would present my concerns with data and alternative solutions in a respectful manner. If they still disagree, I would support their decision while documenting my concerns. Building trust through professional disagreement is important for team growth.',
+                tips: [
+                    'Show respect for hierarchy',
+                    'Emphasize data-driven discussions',
+                    'Demonstrate team player mentality',
+                    'Balance conviction with flexibility'
+                ]
+            },
+            {
+                id: 8,
+                type: 'technical',
+                question: 'How do you ensure code quality in your projects?',
+                sampleAnswer: 'I use multiple strategies: writing unit and integration tests with good coverage, conducting thorough code reviews, following coding standards and style guides, using static analysis tools, implementing CI/CD pipelines, and regularly refactoring. I also believe in pair programming for complex features and maintaining clear documentation.',
+                tips: [
+                    'Mention specific tools and practices',
+                    'Show understanding of testing pyramid',
+                    'Discuss automated vs manual processes',
+                    'Emphasize continuous improvement'
+                ]
+            },
+            {
+                id: 9,
+                type: 'behavioral',
+                question: 'Describe a project you are most proud of and why.',
+                sampleAnswer: 'I led the development of a customer portal that reduced support tickets by 40%. I was proud because it involved coordinating with multiple teams, making critical architectural decisions, and directly impacting user satisfaction. The project taught me valuable lessons about stakeholder management and the importance of user-centered design.',
+                tips: [
+                    'Choose a project with measurable impact',
+                    'Highlight your specific role',
+                    'Discuss challenges overcome',
+                    'Show passion and enthusiasm'
+                ]
+            },
+            {
+                id: 10,
+                type: 'situational',
+                question: 'How would you prioritize multiple urgent tasks with conflicting deadlines?',
+                sampleAnswer: 'I would assess each task\'s business impact, dependencies, and actual urgency versus perceived urgency. I would communicate with stakeholders to understand their needs and negotiate realistic deadlines. I would then create a clear action plan, delegate where possible, and provide regular updates on progress. Transparency and communication are key.',
+                tips: [
+                    'Show strategic thinking',
+                    'Emphasize communication skills',
+                    'Demonstrate time management',
+                    'Mention stakeholder management'
+                ]
+            },
+            {
+                id: 11,
+                type: 'technical',
+                question: 'Explain how you would design a scalable system for handling high traffic.',
+                sampleAnswer: 'I would implement load balancing across multiple servers, use caching strategies (CDN, Redis), implement database replication and sharding, use message queues for async processing, implement auto-scaling, and optimize database queries. I would also monitor system performance and use circuit breakers for fault tolerance.',
+                tips: [
+                    'Discuss both vertical and horizontal scaling',
+                    'Mention specific technologies',
+                    'Consider different components (frontend, backend, database)',
+                    'Address monitoring and reliability'
+                ]
+            },
+            {
+                id: 12,
+                type: 'behavioral',
+                question: 'Tell me about a time you had to give difficult feedback to a colleague.',
+                sampleAnswer: 'A team member\'s code quality was affecting our sprint goals. I scheduled a private meeting, used specific examples, focused on behaviors not personality, and offered to help them improve. We created an action plan together with regular check-ins. Their performance improved significantly, and we maintained a positive working relationship.',
+                tips: [
+                    'Show emotional intelligence',
+                    'Focus on constructive approach',
+                    'Demonstrate leadership skills',
+                    'Emphasize positive outcomes'
+                ]
+            }
+        ];
+
+        async function loadQuestions() {
+            try {
+                // First get the dashboard to find the latest resume ID
+                const dashboardResponse = await fetch('/api/dashboard');
+                if (!dashboardResponse.ok) {
+                    throw new Error('Failed to load dashboard');
+                }
+                
+                const dashboardData = await dashboardResponse.json();
+                
+                // Check if we have a latest analysis with resume data
+                if (!dashboardData.latestAnalysis || !dashboardData.latestAnalysis.resumeId) {
+                    throw new Error('No resume found');
+                }
+                
+                const resumeId = dashboardData.latestAnalysis.resumeId;
+                
+                // Now fetch ALL questions for this resume
+                const questionsResponse = await fetch(`/api/interview/${resumeId}`);
+                if (!questionsResponse.ok) {
+                    throw new Error('Failed to load questions');
+                }
+                
+                const questions = await questionsResponse.json();
+                
+                // Transform API data to match display format
+                const formattedQuestions = questions.map((q, index) => ({
+                    id: index + 1,
+                    type: q.type || 'technical',
+                    question: q.question || 'No question available',
+                    sampleAnswer: q.sampleAnswer || 'No sample answer available',
+                    difficulty: q.difficulty || 'medium',
+                    tips: getTipsForQuestionType(q.type || 'technical')
+                }));
+                
+                loadedQuestions = formattedQuestions;
+                displayQuestions(formattedQuestions);
+                document.getElementById('loadingState').classList.remove('active');
+                document.getElementById('questionsContainer').style.display = 'grid';
+                
+                console.log(`Loaded ${formattedQuestions.length} questions:`, 
+                    formattedQuestions.reduce((acc, q) => {
+                        acc[q.type] = (acc[q.type] || 0) + 1;
+                        return acc;
+                    }, {}));
+                
+            } catch (error) {
+                console.error('Error loading questions:', error);
+                // Fallback to mock questions if API fails
+                loadedQuestions = mockQuestions;
+                displayQuestions(mockQuestions);
+                document.getElementById('loadingState').classList.remove('active');
+                document.getElementById('questionsContainer').style.display = 'grid';
+            }
+        }
+        
+        function getTipsForQuestionType(type) {
+            if (type === 'technical') {
+                return [
+                    'Start with clear definitions and concepts',
+                    'Provide real-world examples from your experience',
+                    'Mention specific technologies you have used',
+                    'Show understanding of best practices'
+                ];
+            } else if (type === 'behavioral') {
+                return [
+                    'Use the STAR method (Situation, Task, Action, Result)',
+                    'Focus on your specific contributions',
+                    'Quantify your results when possible',
+                    'Keep your answer concise (2-3 minutes)'
+                ];
+            } else if (type === 'situational') {
+                return [
+                    'Think through the problem step by step',
+                    'Ask clarifying questions if needed',
+                    'Explain your reasoning process',
+                    'Consider multiple approaches and trade-offs'
+                ];
+            } else {
+                return [
+                    'Structure your answer clearly',
+                    'Provide specific examples',
+                    'Show your thought process',
+                    'Be concise and focused'
+                ];
+            }
+        }
+
+        function displayQuestions(questions) {
+            const container = document.getElementById('questionsContainer');
+            const filtered = currentFilter === 'all' 
+                ? questions 
+                : questions.filter(q => q.type === currentFilter);
+
+            container.innerHTML = filtered.map((q, index) => `
+                <div class="question-card" data-type="${q.type}">
+                    <div class="question-header">
+                        <div class="question-number">${index + 1}</div>
+                        <div class="question-tags">
+                            <span class="question-tag ${q.type}">${capitalize(q.type)}</span>
+                        </div>
+                    </div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="answer-section">
+                        <div class="answer-label">
+                            <span>💡</span>
+                            <span>Sample Answer</span>
+                        </div>
+                        <div class="answer-text">${q.sampleAnswer}</div>
+                    </div>
+                    <div class="tips-section">
+                        <div class="tips-label">
+                            <span>✨</span>
+                            <span>Tips for Answering</span>
+                        </div>
+                        <ul class="tips-list">
+                            ${q.tips.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="question-actions">
+                        <button class="action-btn bookmark" onclick="toggleBookmark(this, ${q.id})">
+                            <span>⭐</span>
+                            <span>Bookmark</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        let loadedQuestions = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterTags = document.querySelectorAll('.filter-tag');
+            filterTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    filterTags.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.getAttribute('data-filter');
+                    displayQuestions(loadedQuestions);
+                });
+            });
+
+            loadQuestions();
+        });
+
+        function toggleBookmark(button, questionId) {
+            button.classList.toggle('active');
+            const bookmarkedCount = document.querySelectorAll('.action-btn.bookmark.active').length;
+            document.getElementById('bookmarked').textContent = bookmarkedCount;
+            
+            if (button.classList.contains('active')) {
+                button.innerHTML = '<span>⭐</span><span>Bookmarked</span>';
+            } else {
+                button.innerHTML = '<span>⭐</span><span>Bookmark</span>';
+            }
+        }
+    </script>
+</body>
+</html>

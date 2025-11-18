@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Resume - Smart Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            font-size: 18px;
+            color: #cbd5e1;
+        }
+
+        .upload-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+            padding: 50px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+        }
+
+        .upload-zone {
+            border: 3px dashed rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 80px 40px;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.3);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: rgba(99, 102, 241, 0.6);
+            transform: scale(1.01);
+        }
+
+        .upload-zone:hover::before {
+            opacity: 1;
+        }
+
+        .upload-zone.drag-over {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-zone.uploading {
+            border-color: #f59e0b;
+            pointer-events: none;
+        }
+
+        .upload-zone.success {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-zone.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .upload-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 28px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .upload-zone.uploading .upload-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .upload-zone.success .upload-icon {
+            animation: bounce 0.6s ease;
+            background: linear-gradient(135deg, #10b981, #14b8a6);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .upload-zone.error .upload-icon {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .upload-content h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .upload-content p {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 32px;
+        }
+
+        .file-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(99, 102, 241, 0.2);
+            padding: 12px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #a5b4fc;
+            font-weight: 500;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 18px 52px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.5);
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 12px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .supported-formats {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .format-badge {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #a5b4fc;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .format-badge:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: scale(1.05);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 40px 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon.green {
+            background: linear-gradient(135deg, #10b981, #14b8a6);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .feature-icon.blue {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .feature-icon.pink {
+            background: linear-gradient(135deg, #ec4899, #f97316);
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+        }
+
+        .feature-icon.purple {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .feature-card h4 {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: #94a3b8;
+            line-height: 1.7;
+        }
+
+        .tips-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+            padding: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tips-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .tips-header h2 {
+            font-size: 36px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .tips-header p {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .tip-category h4 {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid;
+            border-image: linear-gradient(90deg, #6366f1, #8b5cf6) 1;
+        }
+
+        .tip-list {
+            list-style: none;
+        }
+
+        .tip-list li {
+            padding: 14px 0;
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+            display: flex;
+            gap: 14px;
+            align-items: start;
+            transition: all 0.3s ease;
+        }
+
+        .tip-list li:hover {
+            color: #a5b4fc;
+            transform: translateX(6px);
+        }
+
+        .tip-list li::before {
+            content: '✓';
+            color: white;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            min-width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .next-step-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .next-step-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .upload-section, .tips-section {
+                padding: 30px 20px;
+            }
+
+            .upload-zone {
+                padding: 60px 24px;
+            }
+
+            .upload-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Common Navigation Bar -->
+    <nav style="background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%); padding: 1rem 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <a href="/" style="color: white; font-size: 1.5rem; font-weight: 700; text-decoration: none;">Smart Resume</a>
+            <ul style="display: flex; list-style: none; gap: 2rem; margin: 0; padding: 0;">
+                <li><a href="/" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Home</a></li>
+                <li><a href="/upload" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600; background: rgba(255,255,255,0.3);">Upload</a></li>
+                <li><a href="/analysis" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Dashboard</a></li>
+                <li><a href="/interview" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Interview</a></li>
+                <li><a href="/roadmap" style="color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s ease; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background=''; this.style.transform=''">Roadmap</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <div class="container">
+        <div class="header">
+            <h1>Upload Your Resume</h1>
+            <p>Let our AI analyze and optimize your resume for maximum impact</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon" id="uploadIcon">☁️</div>
+                <div class="upload-content">
+                    <h3 id="uploadTitle">Drag & Drop Your Resume</h3>
+                    <p id="uploadDesc">or click the button below to browse files</p>
+                    <div id="fileInfoDisplay" class="file-info" style="display: none;">
+                        <span>📎</span>
+                        <span id="fileName"></span>
+                    </div>
+                    <form id="uploadForm">
+                        <label for="fileInput">
+                            <span class="upload-button" id="uploadBtn">
+                                <span>📁</span>
+                                <span>Choose File</span>
+                            </span>
+                        </label>
+                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" name="resume">
+                    </form>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Analyzing... 0%</div>
+                    </div>
+                </div>
+
+                <div class="supported-formats">
+                    <span class="format-badge">📄 PDF</span>
+                    <span class="format-badge">📝 DOC</span>
+                    <span class="format-badge">📃 DOCX</span>
+                    <span class="format-badge">⚡ Up to 10MB</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon green">✓</div>
+                <h4>ATS Optimization</h4>
+                <p>Instantly discover how well your resume performs with Applicant Tracking Systems used by top companies</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon blue">📝</div>
+                <h4>Smart Feedback</h4>
+                <p>Get AI-powered suggestions on content structure, grammar, formatting, and keyword optimization</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon pink">💭</div>
+                <h4>Interview Ready</h4>
+                <p>Receive personalized interview questions based on your experience and practice with sample answers</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon purple">🎯</div>
+                <h4>Career Roadmap</h4>
+                <p>Get a customized career development plan with skill recommendations and actionable steps</p>
+            </div>
+        </div>
+
+        <div class="tips-section">
+            <div class="tips-header">
+                <h2>Tips for Best Results</h2>
+                <p>Follow these guidelines to get the most accurate analysis</p>
+            </div>
+
+            <div class="tips-grid">
+                <div class="tip-category">
+                    <h4>File Format</h4>
+                    <ul class="tip-list">
+                        <li>Use PDF format for best compatibility and formatting preservation</li>
+                        <li>Avoid image-based PDFs or scanned documents</li>
+                        <li>DOC and DOCX files are supported but may lose some formatting</li>
+                        <li>Keep file size under 10MB for optimal processing speed</li>
+                    </ul>
+                </div>
+
+                <div class="tip-category">
+                    <h4>Content Guidelines</h4>
+                    <ul class="tip-list">
+                        <li>Include quantified achievements with specific numbers and percentages</li>
+                        <li>Use relevant industry keywords and technical skills</li>
+                        <li>Keep formatting consistent throughout the document</li>
+                        <li>Use clear section headers like Experience, Education, Skills</li>
+                    </ul>
+                </div>
+
+                <div class="tip-category">
+                    <h4>Formatting Best Practices</h4>
+                    <ul class="tip-list">
+                        <li>Use standard fonts like Arial, Calibri, or Times New Roman</li>
+                        <li>Maintain consistent spacing and margins throughout</li>
+                        <li>Avoid headers, footers, tables, and complex layouts</li>
+                        <li>Keep resume length to 1-2 pages maximum</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const uploadIcon = document.getElementById('uploadIcon');
+        const uploadTitle = document.getElementById('uploadTitle');
+        const uploadDesc = document.getElementById('uploadDesc');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+        const fileName = document.getElementById('fileName');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        uploadZone.addEventListener('click', (e) => {
+            if (e.target !== fileInput && !e.target.closest('.upload-button')) {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        async function handleFileUpload(file) {
+            const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const maxSize = 10 * 1024 * 1024;
+
+            if (!validTypes.includes(file.type)) {
+                showError('Please upload a PDF, DOC, or DOCX file');
+                return;
+            }
+
+            if (file.size > maxSize) {
+                showError('File size must be less than 10MB');
+                return;
+            }
+
+            fileName.textContent = file.name;
+            fileInfoDisplay.style.display = 'inline-flex';
+
+            uploadZone.classList.add('uploading');
+            uploadIcon.innerHTML = '⏳';
+            uploadTitle.textContent = 'Analyzing Your Resume...';
+            uploadDesc.textContent = 'Please wait while our AI processes your document';
+            uploadBtn.style.display = 'none';
+            progressContainer.classList.add('active');
+
+            try {
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('resume', file);
+
+                // Simulate progress while uploading
+                const progressInterval = setInterval(() => {
+                    const currentWidth = parseInt(progressFill.style.width) || 0;
+                    if (currentWidth < 90) {
+                        const newWidth = currentWidth + Math.random() * 10;
+                        progressFill.style.width = Math.min(newWidth, 90) + '%';
+                        progressText.textContent = `Analyzing... ${Math.round(Math.min(newWidth, 90))}%`;
+                    }
+                }, 200);
+
+                // Upload and analyze
+                const response = await fetch('/api/resumes/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
+                await response.json();
+
+                // Complete progress
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Analysis complete - 100%';
+
+                uploadZone.classList.remove('uploading');
+                uploadZone.classList.add('success');
+                uploadIcon.innerHTML = '✅';
+                uploadTitle.textContent = 'Analysis Complete!';
+                uploadDesc.textContent = 'Your resume has been successfully analyzed';
+
+                // Redirect to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/analysis';
+                }, 2000);
+
+            } catch (error) {
+                showError(error.message || 'Upload failed. Please try again.');
+            }
+        }
+
+        function showError(message) {
+            uploadZone.classList.remove('uploading', 'success');
+            uploadZone.classList.add('error');
+            uploadIcon.innerHTML = '❌';
+            uploadTitle.textContent = 'Upload Failed';
+            uploadDesc.textContent = message;
+            progressContainer.classList.remove('active');
+            uploadBtn.style.display = 'inline-flex';
+
+            setTimeout(resetUploadZone, 4000);
+        }
+
+        function resetUploadZone() {
+            uploadZone.classList.remove('uploading', 'success', 'error');
+            uploadIcon.innerHTML = '☁️';
+            uploadTitle.textContent = 'Drag & Drop Your Resume';
+            uploadDesc.textContent = 'or click the button below to browse files';
+            progressContainer.classList.remove('active');
+            progressFill.style.width = '0%';
+            uploadBtn.style.display = 'inline-flex';
+            fileInfoDisplay.style.display = 'none';
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
